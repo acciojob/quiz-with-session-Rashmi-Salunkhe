@@ -55,7 +55,7 @@ function renderQuestions() {
             // Retrieve user selection from sessionStorage
             const savedAnswer = sessionStorage.getItem(`question-${index}`);
             if (savedAnswer === choice) {
-                input.checked = true;
+                input.checked;
             }
 
             input.addEventListener("change", () => {
