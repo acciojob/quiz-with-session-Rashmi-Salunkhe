@@ -65,7 +65,7 @@ function handleSubmit() {
   let score = 0;
 
   questions.forEach((question, index) => {
-    const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
+    const selectedOption = document.querySelector(`input[name="question-${index}"][checked="true"]`);
     if (selectedOption) {
       const answer = selectedOption.value;
       userAnswers[`question-${index}`] = answer;
