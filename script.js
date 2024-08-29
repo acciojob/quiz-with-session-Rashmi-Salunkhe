@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Save progress in session storage
   questionsContainer.addEventListener("change", () => {
     const progress = {};
-    document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+    document.querySelectorAll('input[type="radio"][checked="true"]').forEach(input => {
       progress[input.name] = input.value;
     });
     sessionStorage.setItem("progress", JSON.stringify(progress));
