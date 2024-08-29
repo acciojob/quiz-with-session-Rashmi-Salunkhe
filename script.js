@@ -1,106 +1,91 @@
-// JavaScript code for the quiz
-
+// Questions data
 const questions = [
-    {
-        question: "What is the capital of France?",
-        choices: ["Paris", "London", "Berlin", "Madrid"],
-        answer: "Paris",
-    },
-    {
-        question: "What is the highest mountain in the world?",
-        choices: ["Everest", "Kilimanjaro", "Denali", "Matterhorn"],
-        answer: "Everest",
-    },
-    {
-        question: "What is the largest country by area?",
-        choices: ["Russia", "China", "Canada", "United States"],
-        answer: "Russia",
-    },
-    {
-        question: "Which is the largest planet in our solar system?",
-        choices: ["Earth", "Jupiter", "Mars"],
-        answer: "Jupiter",
-    },
-    {
-        question: "What is the capital of Canada?",
-        choices: ["Toronto", "Montreal", "Vancouver", "Ottawa"],
-        answer: "Ottawa",
-    },
+  {
+    question: "What is the capital of France?",
+    choices: ["Paris", "London", "Berlin", "Madrid"],
+    answer: "Paris",
+  },
+  {
+    question: "What is the highest mountain in the world?",
+    choices: ["Everest", "Kilimanjaro", "Denali", "Matterhorn"],
+    answer: "Everest",
+  },
+  {
+    question: "What is the largest country by area?",
+    choices: ["Russia", "China", "Canada", "United States"],
+    answer: "Russia",
+  },
+  {
+    question: "Which is the largest planet in our solar system?",
+    choices: ["Earth", "Jupiter", "Mars"],
+    answer: "Jupiter",
+  },
+  {
+    question: "What is the capital of Canada?",
+    choices: ["Toronto", "Montreal", "Vancouver", "Ottawa"],
+    answer: "Ottawa",
+  },
 ];
 
-const questionsElement = document.getElementById("questions");
-const submitButton = document.getElementById("submit");
-const scoreElement = document.getElementById("score");
+// Retrieve user answers from session storage
+let userAnswers = JSON.parse(sessionStorage.getItem('progress')) || {};
 
-// Function to render questions and choices
+// Function to render questions
 function renderQuestions() {
-    questionsElement.innerHTML = "";
+  const questionsElement = document.getElementById("questions");
+  questionsElement.innerHTML = ''; // Clear previous questions
 
-    questions.forEach((question, index) => {
-        const questionDiv = document.createElement("div");
-        questionDiv.classList.add("question");
+  questions.forEach((question, index) => {
+    const questionElement = document.createElement("div");
+    questionElement.innerHTML = `<p>${question.question}</p>`;
 
-        const questionText = document.createElement("p");
-        questionText.textContent = question.question;
-        questionDiv.appendChild(questionText);
+    question.choices.forEach(choice => {
+      const choiceElement = document.createElement("input");
+      choiceElement.setAttribute("type", "radio");
+      choiceElement.setAttribute("name", `question-${index}`);
+      choiceElement.setAttribute("value", choice);
 
-        question.choices.forEach(choice => {
-            const label = document.createElement("label");
-            const input = document.createElement("input");
+      if (userAnswers[`question-${index}`] === choice) {
+        choiceElement.checked = true;
+      }
 
-            input.type = "radio";
-            input.name = `question-${index}`;
-            input.value = choice;
-
-            // Retrieve user selection from sessionStorage
-            const savedAnswer = sessionStorage.getItem(`question-${index}`);
-           if (savedAnswer === choice) {
-    input.setAttribute("checked", "");
-}
-
-            input.addEventListener("change", () => {
-                // Save user selection in sessionStorage
-                sessionStorage.setItem(`question-${index}`, choice);
-            });
-
-            label.appendChild(input);
-            label.appendChild(document.createTextNode(choice));
-            questionDiv.appendChild(label);
-        });
-
-        questionsElement.appendChild(questionDiv);
-    });
-}
-
-// Function to calculate and display the score
-function calculateScore() {
-    let score = 0;
-
-    questions.forEach((question, index) => {
-        const selectedAnswer = sessionStorage.getItem(`question-${index}`);
-        if (selectedAnswer === question.answer) {
-            score++;
-        }
+      const choiceText = document.createTextNode(choice);
+      questionElement.appendChild(choiceElement);
+      questionElement.appendChild(choiceText);
+      questionElement.appendChild(document.createElement("br"));
     });
 
-    // Store the score in localStorage
-    localStorage.setItem("score", score);
-
-    // Display the score
-    scoreElement.textContent = `Your score is ${score} out of ${questions.length}.`;
+    questionsElement.appendChild(questionElement);
+  });
 }
 
-// Event listener for the submit button
-submitButton.addEventListener("click", () => {
-    calculateScore();
-    sessionStorage.clear(); // Clear progress after submission
-});
+// Function to handle form submission
+function handleSubmit() {
+  let score = 0;
 
-// Initial rendering of the quiz
+  questions.forEach((question, index) => {
+    const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
+    if (selectedOption) {
+      const answer = selectedOption.value;
+      userAnswers[`question-${index}`] = answer;
+      if (answer === question.answer) {
+        score++;
+      }
+    }
+  });
+
+  // Save user answers in session storage
+  sessionStorage.setItem('progress', JSON.stringify(userAnswers));
+
+  // Save score in local storage
+  localStorage.setItem('score', score);
+
+  // Display score
+  document.getElementById("score").textContent = `Your score is ${score} out of ${questions.length}.`;
+}
+
+// Add event listener to submit button
+document.getElementById("submit").addEventListener("click", handleSubmit);
+
+// Initial render of questions
 renderQuestions();
-
-// Display the score if it exists in localStorage
-const storedScore = localStorage.getItem("score");
-if (storedScore !== null) {
-    scoreElement.textContent = `Your last score was ${storedScore} out of ${questions.length}.`;
-}
