@@ -1,4 +1,4 @@
-// Questions data
+
 const questions = [
   {
     question: "What is the capital of France?",
@@ -27,65 +27,65 @@ const questions = [
   },
 ];
 
-// Retrieve user answers from session storage
-let userAnswers = JSON.parse(sessionStorage.getItem('progress')) || {};
+document.addEventListener("DOMContentLoaded", () => {
+  const questionsContainer = document.getElementById("questions");
+  const submitButton = document.getElementById("submit");
+  const scoreDisplay = document.getElementById("score");
 
-// Function to render questions
-function renderQuestions() {
-  const questionsElement = document.getElementById("questions");
-  questionsElement.innerHTML = ''; // Clear previous questions
+  // Load progress from session storage
+  const savedProgress = JSON.parse(sessionStorage.getItem("progress")) || {};
 
-  questions.forEach((question, index) => {
-    const questionElement = document.createElement("div");
-    questionElement.innerHTML = `<p>${question.question}</p>`;
+  // Render the questions
+  questions.forEach((q, index) => {
+    const questionDiv = document.createElement("div");
+    questionDiv.classList.add("question");
+    questionDiv.innerHTML = `<p>${q.question}</p>`;
+    const optionsList = document.createElement("ul");
 
-    question.choices.forEach(choice => {
-      const choiceElement = document.createElement("input");
-      choiceElement.setAttribute("type", "radio");
-      choiceElement.setAttribute("name", `question-${index}`);
-      choiceElement.setAttribute("value", choice);
-
-      // Check if the user's previous choice is stored in sessionStorage
-      if (userAnswers[`question-${index}`] === choice) {
-        choiceElement.checked = true;
-      }
-
-      const choiceText = document.createTextNode(choice);
-      questionElement.appendChild(choiceElement);
-      questionElement.appendChild(choiceText);
-      questionElement.appendChild(document.createElement("br"));
+    q.choices.forEach(choice => {
+      const optionItem = document.createElement("li");
+      optionItem.classList.add("option");
+      optionItem.innerHTML = `
+        <label>
+          <input type="radio" name="question${index}" value="${choice}" checked="true"}>
+          ${choice}
+        </label>`;
+      optionsList.appendChild(optionItem);
     });
 
-    questionsElement.appendChild(questionElement);
+    questionDiv.appendChild(optionsList);
+    questionsContainer.appendChild(questionDiv);
   });
-}
 
-// Function to handle form submission
-function handleSubmit() {
-  let score = 0;
+  // Save progress in session storage
+  questionsContainer.addEventListener("change", () => {
+    const progress = {};
+    document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+      progress[input.name] = input.value;
+    });
+    sessionStorage.setItem("progress", JSON.stringify(progress));
+  });
 
-  questions.forEach((question, index) => {
-  const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);    if (selectedOption) {
-      const answer = selectedOption.value;
-      userAnswers[`question-${index}`] = answer;
-      if (answer === question.answer) {
+  // Handle submit button click
+  submitButton.addEventListener("click", () => {
+    const progress = JSON.parse(sessionStorage.getItem("progress")) || {};
+    let score = 0;
+    questions.forEach((q, index) => {
+      if (progress[`question${index}`] === q.answer) {
         score++;
       }
-    }
+    });
+
+    // Save score in local storage
+    localStorage.setItem("score", score);
+
+    // Display score
+    scoreDisplay.textContent = `Your score is ${score} out of 5.`;
   });
 
-  // Save user answers in session storage
-  sessionStorage.setItem('progress', JSON.stringify(userAnswers));
-
-  // Save score in local storage
-  localStorage.setItem('score', score);
-
-  // Display score
-  document.getElementById("score").textContent = `Your score is ${score} out of ${questions.length}.`;
-}
-
-// Add event listener to submit button
-document.getElementById("submit").addEventListener("click", handleSubmit);
-
-// Initial render of questions
-renderQuestions();
+  // Display score from local storage if exists
+  const savedScore = localStorage.getItem("score");
+  if (savedScore !== null) {
+    scoreDisplay.textContent = `Your score is ${savedScore} out of 5.`;
+  }
+});
