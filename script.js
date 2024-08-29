@@ -45,6 +45,7 @@ function renderQuestions() {
       choiceElement.setAttribute("name", `question-${index}`);
       choiceElement.setAttribute("value", choice);
 
+      // Check if the user's previous choice is stored in sessionStorage
       if (userAnswers[`question-${index}`] === choice) {
         choiceElement.checked = true;
       }
