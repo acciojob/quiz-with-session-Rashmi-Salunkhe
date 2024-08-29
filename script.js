@@ -45,9 +45,13 @@ document.addEventListener("DOMContentLoaded", () => {
     q.choices.forEach(choice => {
       const optionItem = document.createElement("li");
       optionItem.classList.add("option");
+
+      // Check if this choice is the saved answer for the question
+      const isChecked = savedProgress[`question${index}`] === choice ? 'checked' : '';
+
       optionItem.innerHTML = `
         <label>
-          <input type="radio" name="question${index}" value="${choice}" checked="true"}>
+          <input type="radio" name="question${index}" value="${choice}" ${isChecked}>
           ${choice}
         </label>`;
       optionsList.appendChild(optionItem);
