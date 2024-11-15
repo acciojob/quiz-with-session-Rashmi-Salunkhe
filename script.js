@@ -1,4 +1,7 @@
+//your JS code here.
 
+// Do not change code below this line
+// This code will just display the questions to the screen
 const questions = [
   {
     question: "What is the capital of France?",
@@ -27,69 +30,79 @@ const questions = [
   },
 ];
 
-document.addEventListener("DOMContentLoaded", () => {
-  const questionsContainer = document.getElementById("questions");
-  const submitButton = document.getElementById("submit");
-  const scoreDisplay = document.getElementById("score");
+// Display the quiz questions and choices
+// Your added code starts here
+const questionsElement = document.getElementById("questions");
+const submitButton = document.getElementById("submit");
+const scoreElement = document.getElementById("score");
 
-  // Load progress from session storage
-  const savedProgress = JSON.parse(sessionStorage.getItem("progress")) || {};
+// Retrieve saved answers from session storage or initialize an empty object
+let userAnswers = JSON.parse(sessionStorage.getItem("progress")) || {};
 
-  // Render the questions
-  questions.forEach((q, index) => {
-    const questionDiv = document.createElement("div");
-    questionDiv.classList.add("question");
-    questionDiv.innerHTML = `<p>${q.question}</p>`;
-    const optionsList = document.createElement("ul");
+// Function to save user progress
+function saveProgress() {
+  sessionStorage.setItem("progress", JSON.stringify(userAnswers));
+}
 
-    q.choices.forEach(choice => {
-      const optionItem = document.createElement("li");
-      optionItem.classList.add("option");
-
-      // Check if this choice is the saved answer for the question
-      const isChecked = savedProgress[`question${index}`] === choice ? 'checked' : '';
-
-      optionItem.innerHTML = `
-        <label>
-          <input type="radio" name="question${index}" value="${choice}" ${isChecked}>
-          ${choice}
-        </label>`;
-      optionsList.appendChild(optionItem);
-    });
-
-    questionDiv.appendChild(optionsList);
-    questionsContainer.appendChild(questionDiv);
+// Function to calculate and display the user's score
+function calculateScore() {
+  let score = 0;
+  questions.forEach((question, i) => {
+    if (userAnswers[i] === question.answer) {
+      score++;
+    }
   });
+  scoreElement.textContent = `Your score is ${score} out of ${questions.length}.`;
+  localStorage.setItem("score", score); // Save score to local storage
+}
 
-  // Save progress in session storage
-  questionsContainer.addEventListener("change", () => {
-    const progress = {};
-    document.querySelectorAll('input[type="radio"][checked="true"]').forEach(input => {
-      progress[input.name] = input.value;
-    });
-    sessionStorage.setItem("progress", JSON.stringify(progress));
-  });
+// Render questions with the ability to load saved progress
+function renderQuestions() {
+  questionsElement.innerHTML = ""; // Clear any previous content
 
-  // Handle submit button click
-  submitButton.addEventListener("click", () => {
-    const progress = JSON.parse(sessionStorage.getItem("progress")) || {};
-    let score = 0;
-    questions.forEach((q, index) => {
-      if (progress[`question${index}`] === q.answer) {
-        score++;
+  questions.forEach((question, i) => {
+    const questionContainer = document.createElement("div");
+    const questionText = document.createElement("p");
+    questionText.textContent = question.question;
+    questionContainer.appendChild(questionText);
+
+    question.choices.forEach((choice) => {
+      const choiceLabel = document.createElement("label");
+      const choiceInput = document.createElement("input");
+
+      choiceInput.type = "radio";
+      choiceInput.name = `question-${i}`;
+      choiceInput.value = choice;
+
+      // Explicitly set the checked property if this option was previously selected
+      if (userAnswers[i] === choice) {
+        choiceInput.setAttribute("checked", "true");
+        choiceInput.checked = true; // Ensure it's also set as a property
       }
+
+      // Event listener to save progress on selection
+      choiceInput.addEventListener("change", () => {
+        userAnswers[i] = choice; // Save answer in userAnswers object
+        saveProgress(); // Update session storage with new progress
+      });
+
+      choiceLabel.appendChild(choiceInput);
+      choiceLabel.appendChild(document.createTextNode(choice));
+      questionContainer.appendChild(choiceLabel);
     });
 
-    // Save score in local storage
-    localStorage.setItem("score", score);
-
-    // Display score
-    scoreDisplay.textContent = `Your score is ${score} out of 5.`;
+    questionsElement.appendChild(questionContainer);
   });
+}
 
-  // Display score from local storage if exists
-  const savedScore = localStorage.getItem("score");
-  if (savedScore !== null) {
-    scoreDisplay.textContent = `Your score is ${savedScore} out of 5.`;
-  }
-});
+
+submitButton.addEventListener("click", calculateScore);
+
+// Display stored score if available in local storage
+const savedScore = localStorage.getItem("score");
+if (savedScore) {
+  scoreElement.textContent = `Your score is ${savedScore} out of ${questions.length}.`;
+}
+
+// Initial rendering of questions
+renderQuestions();
